@@ -476,14 +476,26 @@ class GameScene extends Phaser.Scene {
 
 // Removed local Round2Scene stub to use external round2.js definition
 
+const isMobile = /android|iphone|ipad|ipod|ios/i.test(navigator.userAgent);
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: isMobile ? window.innerWidth : 1920,
+  height: isMobile ? window.innerHeight : 1080,
   parent: 'game',
   scene: [MainMenu, Settings, NarrativeScene, GameScene, Round2Scene, Round3Scene, EndingScene],
-  physics: { default: 'arcade', arcade: { debug: false } }
+  physics: { default: 'arcade', arcade: { debug: false } },
+  scale: {
+    mode: isMobile ? Phaser.Scale.RESIZE : Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: isMobile ? window.innerWidth : 1920,
+    height: isMobile ? window.innerHeight : 1080
+  }
 };
+window.addEventListener('resize', () => {
+  if (!isMobile && window.game && window.game.scale) {
+    window.game.scale.resize(window.innerWidth, window.innerHeight);
+  }
+});
 
 window.onload = () => {
   new Phaser.Game(config);
