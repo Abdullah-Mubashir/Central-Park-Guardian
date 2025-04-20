@@ -28,7 +28,9 @@ class MainMenu extends Phaser.Scene {
     
     // Check if player has completed the game (defeated the boss)
     const gameCompleted = localStorage.getItem('gameCompleted') === 'true';
-    
+    // Determine if player has viewed the narrative message
+    const messageRead = localStorage.getItem('messageRead') === 'true';
+
     // Display commander status
     this.add.text(400, 210, `Killed Commander: ${gameCompleted ? 'Yes' : 'No'}`, {
       fontFamily: 'Arial', fontSize: '24px', color: gameCompleted ? '#00ff00' : '#ff0000'
@@ -38,10 +40,18 @@ class MainMenu extends Phaser.Scene {
     // menu options (styled buttons) - adjust positions based on game completion status
     const buttonY = gameCompleted ? 320 : 300;
     
-    const startBtn = this.add.container(400, buttonY).setSize(200, 50).setInteractive({ useHandCursor: true });
+    const startBtn = this.add.container(400, buttonY).setSize(200, 50);
     const startBg = this.add.rectangle(0, 0, 200, 50, 0x3b3f56).setStrokeStyle(2, 0xa9d1ff);
     const startText = this.add.text(0, 0, 'Start Game', { fontSize: '32px', color: '#a9d1ff' }).setOrigin(0.5);
     startBtn.add([startBg, startText]);
+    // Disable start until narrative viewed
+    if (!messageRead) {
+      startBtn.disableInteractive();
+      startBg.setFillStyle(0x3b3f56, 0.5);
+      startText.setStyle({ color: '#666666' });
+    } else {
+      startBtn.setInteractive({ useHandCursor: true });
+    }
     startBtn.on('pointerover', () => startText.setStyle({ color: '#ffffff' }));
     startBtn.on('pointerout', () => startText.setStyle({ color: '#a9d1ff' }));
     startBtn.on('pointerup', () => {
@@ -66,10 +76,24 @@ class MainMenu extends Phaser.Scene {
     const msgBg = this.add.rectangle(0, 0, 200, 50, 0x3b3f56).setStrokeStyle(2, 0xa9d1ff);
     const msgText = this.add.text(0, 0, 'Massage', { fontSize: '32px', color: '#a9d1ff' }).setOrigin(0.5);
     messageBtn.add([msgBg, msgText]);
+    // Highlight message button until narrative viewed
+    if (!messageRead) {
+      this.tweens.add({
+        targets: messageBtn,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    }
     messageBtn.on('pointerover', () => msgText.setStyle({ color: '#ffffff' }));
     messageBtn.on('pointerout', () => msgText.setStyle({ color: '#a9d1ff' }));
     messageBtn.on('pointerup', () => {
       this.sound.play('buttonClick', { volume: 1.0 });
+      // Mark narrative as read and return to menu later
+      localStorage.setItem('messageRead', 'true');
       this.scene.start('NarrativeScene');
     });
     

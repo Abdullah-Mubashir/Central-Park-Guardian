@@ -76,9 +76,9 @@ class EndingScene extends Phaser.Scene {
             "",
             "With their command structure in disarray, now is our moment to strike.",
             "",
-            "The real fight begins now, but your part is done.",
+            "The real fight begins now, get set, we got more.",
             "",
-            "Return to base for debriefing. This victory will not be forgotten."
+            "Return to base for debriefing."
         ].join('\n');
         
         const textConfig = {
