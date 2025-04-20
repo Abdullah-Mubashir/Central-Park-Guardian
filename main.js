@@ -477,25 +477,47 @@ class GameScene extends Phaser.Scene {
 // Removed local Round2Scene stub to use external round2.js definition
 
 const isMobile = /android|iphone|ipad|ipod|ios/i.test(navigator.userAgent);
+// Desktop: 1600x900 game size, centered with black bars, keeps aspect ratio
+const GAME_WIDTH = isMobile ? window.innerWidth : 1600;
+const GAME_HEIGHT = isMobile ? window.innerHeight : 900;
 const config = {
   type: Phaser.AUTO,
-  width: isMobile ? window.innerWidth : 1920,
-  height: isMobile ? window.innerHeight : 1080,
+  width: GAME_WIDTH,
+  height: GAME_HEIGHT,
   parent: 'game',
   scene: [MainMenu, Settings, NarrativeScene, GameScene, Round2Scene, Round3Scene, EndingScene],
   physics: { default: 'arcade', arcade: { debug: false } },
+  backgroundColor: '#000000',
   scale: {
     mode: isMobile ? Phaser.Scale.RESIZE : Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: isMobile ? window.innerWidth : 1920,
-    height: isMobile ? window.innerHeight : 1080
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    min: {
+      width: isMobile ? 320 : 800,
+      height: isMobile ? 240 : 450
+    },
+    max: {
+      width: isMobile ? window.innerWidth : 1600,
+      height: isMobile ? window.innerHeight : 900
+    }
   }
 };
 window.addEventListener('resize', () => {
   if (!isMobile && window.game && window.game.scale) {
-    window.game.scale.resize(window.innerWidth, window.innerHeight);
+    window.game.scale.resize(GAME_WIDTH, GAME_HEIGHT);
   }
 });
+// Center canvas in browser with margin
+if (!isMobile) {
+  document.body.style.background = '#000';
+  document.body.style.margin = '0';
+  document.body.style.display = 'flex';
+  document.body.style.justifyContent = 'center';
+  document.body.style.alignItems = 'center';
+  document.body.style.height = '100vh';
+}
+
 
 window.onload = () => {
   new Phaser.Game(config);
