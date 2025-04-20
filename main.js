@@ -246,8 +246,8 @@ class GameScene extends Phaser.Scene {
         currentPower: this.currentPower
       });
     });
-    // Mobile touch controls for Round 1
-    if (this.sys.game.device.input.touch && this.round === 1) {
+    // Mobile touch controls for Round 1 (touch, iOS, Android)
+    if ((this.sys.game.device.input.touch || this.sys.game.device.os.android || this.sys.game.device.os.iOS) && this.round === 1) {
       this.touchLeft = this.touchRight = this.touchUp = this.touchDown = false;
       const width = this.scale.width;
       const height = this.scale.height;
@@ -256,10 +256,22 @@ class GameScene extends Phaser.Scene {
       const centerY = height - (btnSize + 20);
       const gap = btnSize + 10;
       // directional buttons
-      const leftBtn = this.add.rectangle(centerX - gap, centerY, btnSize, btnSize, 0xffffff, 0.3).setScrollFactor(0).setInteractive();
-      const rightBtn = this.add.rectangle(centerX + gap, centerY, btnSize, btnSize, 0xffffff, 0.3).setScrollFactor(0).setInteractive();
-      const upBtn = this.add.rectangle(centerX, centerY - gap, btnSize, btnSize, 0xffffff, 0.3).setScrollFactor(0).setInteractive();
-      const downBtn = this.add.rectangle(centerX, centerY + gap, btnSize, btnSize, 0xffffff, 0.3).setScrollFactor(0).setInteractive();
+      const leftBtn = this.add.rectangle(centerX - gap, centerY, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const rightBtn = this.add.rectangle(centerX + gap, centerY, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const upBtn = this.add.rectangle(centerX, centerY - gap, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const downBtn = this.add.rectangle(centerX, centerY + gap, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      [
+        {x: centerX-gap, y: centerY, char: '←'},
+        {x: centerX+gap, y: centerY, char: '→'},
+        {x: centerX,    y: centerY-gap, char: '↑'},
+        {x: centerX,    y: centerY+gap, char: '↓'}
+      ].forEach(({x,y,char}) =>
+        this.add.text(x,y,char,{fontSize:'24px',color:'#000'}).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+      );
       [ {btn: leftBtn, flag: 'touchLeft'}, {btn: rightBtn, flag: 'touchRight'},
         {btn: upBtn, flag: 'touchUp'}, {btn: downBtn, flag: 'touchDown'} ]
       .forEach(({btn, flag}) => {
@@ -269,7 +281,7 @@ class GameScene extends Phaser.Scene {
       });
       // shoot button
       const shootBtn = this.add.circle(width - (btnSize + 20), height - (btnSize + 20), btnSize / 2, 0xff0000, 0.3)
-        .setScrollFactor(0).setInteractive();
+        .setScrollFactor(0).setInteractive().setDepth(1000);
       shootBtn.on('pointerdown', pointer => this.handleShoot(pointer));
     }
     // initialize combat properties and weapon manager
