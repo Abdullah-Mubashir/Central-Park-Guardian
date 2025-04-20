@@ -251,26 +251,28 @@ class GameScene extends Phaser.Scene {
       this.touchLeft = this.touchRight = this.touchUp = this.touchDown = false;
       const width = this.scale.width;
       const height = this.scale.height;
-      const btnSize = 40;
-      const centerX = btnSize + 20;
-      const centerY = height - (btnSize + 20);
-      const gap = btnSize + 10;
+      const btnSize = 48;
+      const padding = 18;
+      // Place D-pad at bottom left, easier for thumb
+      const baseX = padding + btnSize;
+      const baseY = height - (padding + btnSize);
+      const gap = btnSize + 8;
       // directional buttons
-      const leftBtn = this.add.rectangle(centerX - gap, centerY, btnSize, btnSize, 0xffffff, 0.3)
+      const leftBtn = this.add.rectangle(baseX - gap, baseY, btnSize, btnSize, 0xffffff, 0.3)
         .setScrollFactor(0).setInteractive().setDepth(1000);
-      const rightBtn = this.add.rectangle(centerX + gap, centerY, btnSize, btnSize, 0xffffff, 0.3)
+      const rightBtn = this.add.rectangle(baseX + gap, baseY, btnSize, btnSize, 0xffffff, 0.3)
         .setScrollFactor(0).setInteractive().setDepth(1000);
-      const upBtn = this.add.rectangle(centerX, centerY - gap, btnSize, btnSize, 0xffffff, 0.3)
+      const upBtn = this.add.rectangle(baseX, baseY - gap, btnSize, btnSize, 0xffffff, 0.3)
         .setScrollFactor(0).setInteractive().setDepth(1000);
-      const downBtn = this.add.rectangle(centerX, centerY + gap, btnSize, btnSize, 0xffffff, 0.3)
+      const downBtn = this.add.rectangle(baseX, baseY + gap, btnSize, btnSize, 0xffffff, 0.3)
         .setScrollFactor(0).setInteractive().setDepth(1000);
       [
-        {x: centerX-gap, y: centerY, char: '←'},
-        {x: centerX+gap, y: centerY, char: '→'},
-        {x: centerX,    y: centerY-gap, char: '↑'},
-        {x: centerX,    y: centerY+gap, char: '↓'}
+        {x: baseX-gap, y: baseY, char: '←'},
+        {x: baseX+gap, y: baseY, char: '→'},
+        {x: baseX,    y: baseY-gap, char: '↑'},
+        {x: baseX,    y: baseY+gap, char: '↓'}
       ].forEach(({x,y,char}) =>
-        this.add.text(x,y,char,{fontSize:'24px',color:'#000'}).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+        this.add.text(x,y,char,{fontSize:'28px',color:'#000'}).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
       );
       [ {btn: leftBtn, flag: 'touchLeft'}, {btn: rightBtn, flag: 'touchRight'},
         {btn: upBtn, flag: 'touchUp'}, {btn: downBtn, flag: 'touchDown'} ]
@@ -279,10 +281,18 @@ class GameScene extends Phaser.Scene {
         btn.on('pointerup',   () => this[flag] = false);
         btn.on('pointerout',  () => this[flag] = false);
       });
-      // shoot button
-      const shootBtn = this.add.circle(width - (btnSize + 20), height - (btnSize + 20), btnSize / 2, 0xff0000, 0.3)
-        .setScrollFactor(0).setInteractive().setDepth(1000);
-      shootBtn.on('pointerdown', pointer => this.handleShoot(pointer));
+      // Remove shoot button, tap anywhere else to shoot
+      this.input.on('pointerdown', pointer => {
+        // Don't trigger shoot if tapping on a movement button
+        const touchX = pointer.x, touchY = pointer.y;
+        const onDpad = (
+          (Math.abs(touchX - (baseX-gap)) < btnSize && Math.abs(touchY - baseY) < btnSize) ||
+          (Math.abs(touchX - (baseX+gap)) < btnSize && Math.abs(touchY - baseY) < btnSize) ||
+          (Math.abs(touchX - baseX) < btnSize && Math.abs(touchY - (baseY-gap)) < btnSize) ||
+          (Math.abs(touchX - baseX) < btnSize && Math.abs(touchY - (baseY+gap)) < btnSize)
+        );
+        if (!onDpad) this.handleShoot(pointer);
+      });
     }
     // initialize combat properties and weapon manager
     this.player.power = this.currentPower;
