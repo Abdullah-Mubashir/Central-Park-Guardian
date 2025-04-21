@@ -35,10 +35,10 @@ class Round3Scene extends Phaser.Scene {
       // Dev: skip countdown
       this.ready = true;
     } else {
-      this.countdown = 10;
+      this.countdown = 4;
       this.countdownText = this.add.text(400, 50, `Boss fight starts in ${this.countdown}s`, { fontSize: '32px', color: '#ffff00' })
         .setOrigin(0.5).setDepth(10);
-      this.time.addEvent({ delay: 1000, repeat: 10, callback: () => {
+      this.time.addEvent({ delay: 1000, repeat: 4, callback: () => {
           this.countdown--;
           if (this.countdown > 0) {
             this.countdownText.setText(`Boss fight starts in ${this.countdown}s`);
@@ -137,7 +137,7 @@ class Round3Scene extends Phaser.Scene {
     this.isBossDead = false;
 
     // Create boss after countdown
-    this.time.delayedCall(11000, this.createBoss, [], this);
+    this.time.delayedCall(5000, this.createBoss, [], this);
   }
   
   createBoss() {

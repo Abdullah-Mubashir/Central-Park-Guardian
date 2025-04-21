@@ -165,15 +165,15 @@ class GameScene extends Phaser.Scene {
       .setDepth(-1);
     // game round tracking
     this.round = 1;
-    // initial grace period before combat (10s) with countdown display
+    // initial grace period before combat (4s) with countdown display
     this.ready = false;
-    this.countdown = 10;
+    this.countdown = 4;
     this.countdownText = this.add.text(400, 50, `Combat starts in ${this.countdown}s`, { fontSize: '32px', color: '#ffff00' })
       .setOrigin(0.5)
       .setDepth(10);  // ensure countdown is visible above background graphics
     this.countdownEvent = this.time.addEvent({
       delay: 1000,
-      repeat: 10,
+      repeat: 4,
       callback: () => {
         this.countdown--;
         if (this.countdown > 0) {
@@ -246,6 +246,54 @@ class GameScene extends Phaser.Scene {
         currentPower: this.currentPower
       });
     });
+    // Mobile touch controls for Round 1 (touch, iOS, Android)
+    if ((this.sys.game.device.input.touch || this.sys.game.device.os.android || this.sys.game.device.os.iOS) && this.round === 1) {
+      this.touchLeft = this.touchRight = this.touchUp = this.touchDown = false;
+      const width = this.scale.width;
+      const height = this.scale.height;
+      const btnSize = 48;
+      const padding = 18;
+      // Place D-pad at bottom left, easier for thumb
+      const baseX = padding + btnSize;
+      const baseY = height - (padding + btnSize);
+      const gap = btnSize + 8;
+      // directional buttons
+      const leftBtn = this.add.rectangle(baseX - gap, baseY, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const rightBtn = this.add.rectangle(baseX + gap, baseY, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const upBtn = this.add.rectangle(baseX, baseY - gap, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      const downBtn = this.add.rectangle(baseX, baseY + gap, btnSize, btnSize, 0xffffff, 0.3)
+        .setScrollFactor(0).setInteractive().setDepth(1000);
+      [
+        {x: baseX-gap, y: baseY, char: '←'},
+        {x: baseX+gap, y: baseY, char: '→'},
+        {x: baseX,    y: baseY-gap, char: '↑'},
+        {x: baseX,    y: baseY+gap, char: '↓'}
+      ].forEach(({x,y,char}) =>
+        this.add.text(x,y,char,{fontSize:'28px',color:'#000'}).setOrigin(0.5).setScrollFactor(0).setDepth(1001)
+      );
+      [ {btn: leftBtn, flag: 'touchLeft'}, {btn: rightBtn, flag: 'touchRight'},
+        {btn: upBtn, flag: 'touchUp'}, {btn: downBtn, flag: 'touchDown'} ]
+      .forEach(({btn, flag}) => {
+        btn.on('pointerdown', () => this[flag] = true);
+        btn.on('pointerup',   () => this[flag] = false);
+        btn.on('pointerout',  () => this[flag] = false);
+      });
+      // Remove shoot button, tap anywhere else to shoot
+      this.input.on('pointerdown', pointer => {
+        // Don't trigger shoot if tapping on a movement button
+        const touchX = pointer.x, touchY = pointer.y;
+        const onDpad = (
+          (Math.abs(touchX - (baseX-gap)) < btnSize && Math.abs(touchY - baseY) < btnSize) ||
+          (Math.abs(touchX - (baseX+gap)) < btnSize && Math.abs(touchY - baseY) < btnSize) ||
+          (Math.abs(touchX - baseX) < btnSize && Math.abs(touchY - (baseY-gap)) < btnSize) ||
+          (Math.abs(touchX - baseX) < btnSize && Math.abs(touchY - (baseY+gap)) < btnSize)
+        );
+        if (!onDpad) this.handleShoot(pointer);
+      });
+    }
     // initialize combat properties and weapon manager
     this.player.power = this.currentPower;
     this.weaponManager = new WeaponManager(this, this.commonFast);
@@ -295,7 +343,7 @@ class GameScene extends Phaser.Scene {
     // enemy bullets group
     this.enemyBullets = this.physics.add.group();
     // schedule enemy shooting after grace period
-    this.time.delayedCall(10000, () => {
+    this.time.delayedCall(4000, () => {
       this.enemies.getChildren().forEach(enemy => {
         const shootTimer = this.time.addEvent({
           delay: 433,
@@ -408,10 +456,10 @@ class GameScene extends Phaser.Scene {
   }
   update() {
     this.player.body.setVelocity(0, 0);
-    if (this.cursors.left.isDown)  this.player.body.setVelocityX(-this.playerSpeed);
-    if (this.cursors.right.isDown) this.player.body.setVelocityX(this.playerSpeed);
-    if (this.cursors.up.isDown)    this.player.body.setVelocityY(-this.playerSpeed);
-    if (this.cursors.down.isDown)  this.player.body.setVelocityY(this.playerSpeed);
+    if (this.cursors.left.isDown || this.touchLeft)  this.player.body.setVelocityX(-this.playerSpeed);
+    if (this.cursors.right.isDown|| this.touchRight) this.player.body.setVelocityX(this.playerSpeed);
+    if (this.cursors.up.isDown   || this.touchUp)    this.player.body.setVelocityY(-this.playerSpeed);
+    if (this.cursors.down.isDown || this.touchDown)  this.player.body.setVelocityY(this.playerSpeed);
     this.player.body.velocity.normalize().scale(this.playerSpeed);
   }
   // Redraw environment based on current biome colors
@@ -428,14 +476,48 @@ class GameScene extends Phaser.Scene {
 
 // Removed local Round2Scene stub to use external round2.js definition
 
+const isMobile = /android|iphone|ipad|ipod|ios/i.test(navigator.userAgent);
+// Desktop: 1600x900 game size, centered with black bars, keeps aspect ratio
+const GAME_WIDTH = isMobile ? window.innerWidth : 1600;
+const GAME_HEIGHT = isMobile ? window.innerHeight : 900;
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: GAME_WIDTH,
+  height: GAME_HEIGHT,
   parent: 'game',
   scene: [MainMenu, Settings, NarrativeScene, GameScene, Round2Scene, Round3Scene, EndingScene],
-  physics: { default: 'arcade', arcade: { debug: false } }
+  physics: { default: 'arcade', arcade: { debug: false } },
+  backgroundColor: '#000000',
+  scale: {
+    mode: isMobile ? Phaser.Scale.RESIZE : Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    min: {
+      width: isMobile ? 320 : 800,
+      height: isMobile ? 240 : 450
+    },
+    max: {
+      width: isMobile ? window.innerWidth : 1600,
+      height: isMobile ? window.innerHeight : 900
+    }
+  }
 };
+window.addEventListener('resize', () => {
+  if (!isMobile && window.game && window.game.scale) {
+    window.game.scale.resize(GAME_WIDTH, GAME_HEIGHT);
+  }
+});
+// Center canvas in browser with margin
+if (!isMobile) {
+  document.body.style.background = '#000';
+  document.body.style.margin = '0';
+  document.body.style.display = 'flex';
+  document.body.style.justifyContent = 'center';
+  document.body.style.alignItems = 'center';
+  document.body.style.height = '100vh';
+}
+
 
 window.onload = () => {
   new Phaser.Game(config);

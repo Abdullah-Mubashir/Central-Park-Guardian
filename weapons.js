@@ -38,14 +38,16 @@ class WeaponManager {
     // Play gun sound on every shot
 
     const angle = Phaser.Math.Angle.Between(this.scene.player.x, this.scene.player.y, pointer.worldX, pointer.worldY);
-    const angles = (count === 3) ? [angle - 0.2, angle, angle + 0.2] : [angle];
+    const angles = (count === 3) ? [angle - 0.1, angle, angle + 0.1] : [angle];
     angles.forEach(a => {
       const b = this.bullets.create(this.scene.player.x, this.scene.player.y, textureKey);
       // assign damage matching Round2: common [20,50], others [40,60]
       if (textureKey === 'bullet_common') b.damage = Phaser.Math.RND.pick([20, 50]);
       else b.damage = Phaser.Math.Between(40, 60);
       b.setVelocity(Math.cos(a) * speed, Math.sin(a) * speed);
-      this.scene.time.delayedCall(1400, () => b.destroy()); // Reduced from 2000ms by 30%
+      // Blue bullets lifespan reduced by 16%; others unchanged
+      const lifespan = (textureKey === 'bullet_blue') ? Math.round(1400 * 0.84) : 1400;
+      this.scene.time.delayedCall(lifespan, () => b.destroy());
     });
   }
 }
