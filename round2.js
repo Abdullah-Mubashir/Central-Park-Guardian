@@ -31,10 +31,10 @@ class Round2Scene extends Phaser.Scene {
       // Dev: skip countdown
       this.ready = true;
     } else {
-      this.countdown = 10;
+      this.countdown = 4;
       this.countdownText = this.add.text(400, 50, `Combat starts in ${this.countdown}s`, { fontSize: '32px', color: '#ffff00' })
         .setOrigin(0.5).setDepth(10);
-      this.time.addEvent({ delay: 1000, repeat: 10, callback: () => {
+      this.time.addEvent({ delay: 1000, repeat: 4, callback: () => {
           this.countdown--;
           if (this.countdown > 0) {
             this.countdownText.setText(`Combat starts in ${this.countdown}s`);
@@ -162,8 +162,8 @@ class Round2Scene extends Phaser.Scene {
         const enemy = new Enemy(this, x, y);
         // Set enemy health to 50 for Round 2
         enemy.health = 50;
-        // increase enemy size by 40% (1.2 * 1.2 = 1.44)
-        enemy.setDisplaySize(enemy.displayWidth * 1.44, enemy.displayHeight * 1.44);
+        // increase enemy size by 40% (scale factor 1.4)
+        enemy.setDisplaySize(enemy.displayWidth * 1.4, enemy.displayHeight * 1.4);
         enemy.body.setSize(enemy.displayWidth, enemy.displayHeight);
         // add to master group
         this.enemies.add(enemy);

@@ -165,15 +165,15 @@ class GameScene extends Phaser.Scene {
       .setDepth(-1);
     // game round tracking
     this.round = 1;
-    // initial grace period before combat (10s) with countdown display
+    // initial grace period before combat (4s) with countdown display
     this.ready = false;
-    this.countdown = 10;
+    this.countdown = 4;
     this.countdownText = this.add.text(400, 50, `Combat starts in ${this.countdown}s`, { fontSize: '32px', color: '#ffff00' })
       .setOrigin(0.5)
       .setDepth(10);  // ensure countdown is visible above background graphics
     this.countdownEvent = this.time.addEvent({
       delay: 1000,
-      repeat: 10,
+      repeat: 4,
       callback: () => {
         this.countdown--;
         if (this.countdown > 0) {
@@ -343,7 +343,7 @@ class GameScene extends Phaser.Scene {
     // enemy bullets group
     this.enemyBullets = this.physics.add.group();
     // schedule enemy shooting after grace period
-    this.time.delayedCall(10000, () => {
+    this.time.delayedCall(4000, () => {
       this.enemies.getChildren().forEach(enemy => {
         const shootTimer = this.time.addEvent({
           delay: 433,
