@@ -12,6 +12,7 @@ class MainMenu extends Phaser.Scene {
     this.load.audio('buttonClick', 'round1Images/Buttonclick.mp3');
     this.load.audio('pregameLine', 'round1Images/pregameline.mp3');
     this.load.audio('endgameLines', 'round1Images/endgamelines.mp3');
+    this.load.image('cover', 'cover.jpg');
   }
   create() {
     // Initialize the global timer
@@ -20,61 +21,55 @@ class MainMenu extends Phaser.Scene {
     }
     
     // background
-    this.cameras.main.setBackgroundColor('#1d212d');
-    // title text
-    this.add.text(400, 150, 'Central Park Guardian', {
-      fontFamily: 'Arial', fontSize: '48px', color: '#ffffff'
-    }).setOrigin(0.5);
+    this.add.image(0, 0, 'cover').setOrigin(0).setDisplaySize(this.scale.width, this.scale.height);
     
-    // Check if player has completed the game (defeated the boss)
+    // Center menu status and buttons
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
     const gameCompleted = localStorage.getItem('gameCompleted') === 'true';
-    // Determine if player has viewed the narrative message
     const messageRead = localStorage.getItem('messageRead') === 'true';
-
-    // Display commander status
-    this.add.text(400, 210, `Killed Commander: ${gameCompleted ? 'Yes' : 'No'}`, {
+    // Display commander status above buttons
+    this.add.text(centerX, centerY - 60, `Killed Commander: ${gameCompleted ? 'Yes' : 'No'}`, {
       fontFamily: 'Arial', fontSize: '24px', color: gameCompleted ? '#00ff00' : '#ff0000'
     }).setOrigin(0.5);
+    // Base Y for buttons
+    const buttonY = centerY - 20;
     
-
-    // menu options (styled buttons) - adjust positions based on game completion status
-    const buttonY = gameCompleted ? 320 : 300;
-    
-    const startBtn = this.add.container(400, buttonY).setSize(200, 50);
-    const startBg = this.add.rectangle(0, 0, 200, 50, 0x3b3f56).setStrokeStyle(2, 0xa9d1ff);
-    const startText = this.add.text(0, 0, 'Start Game', { fontSize: '32px', color: '#a9d1ff' }).setOrigin(0.5);
+    const startBtn = this.add.container(centerX, buttonY).setSize(200, 50);
+    const startBg = this.add.rectangle(0, 0, 200, 50, 0x8B4513).setStrokeStyle(2, 0x228B22);
+    const startText = this.add.text(0, 0, 'Start Game', { fontSize: '32px', color: '#87CEEB' }).setOrigin(0.5);
     startBtn.add([startBg, startText]);
     // Disable start until narrative viewed
     if (!messageRead) {
       startBtn.disableInteractive();
-      startBg.setFillStyle(0x3b3f56, 0.5);
+      startBg.setFillStyle(0x8B4513, 0.5);
       startText.setStyle({ color: '#666666' });
     } else {
       startBtn.setInteractive({ useHandCursor: true });
     }
     startBtn.on('pointerover', () => startText.setStyle({ color: '#ffffff' }));
-    startBtn.on('pointerout', () => startText.setStyle({ color: '#a9d1ff' }));
+    startBtn.on('pointerout', () => startText.setStyle({ color: '#87CEEB' }));
     startBtn.on('pointerup', () => {
       this.sound.play('buttonClick', { volume: 1.0 });
       console.log('Start clicked');
       this.scene.start('GameScene');
     });
     
-    const settingsBtn = this.add.container(400, buttonY + 70).setSize(200, 50).setInteractive({ useHandCursor: true });
-    const settingsBg = this.add.rectangle(0, 0, 200, 50, 0x3b3f56).setStrokeStyle(2, 0xa9d1ff);
-    const settingsText = this.add.text(0, 0, 'Settings', { fontSize: '32px', color: '#a9d1ff' }).setOrigin(0.5);
+    const settingsBtn = this.add.container(centerX, buttonY + 70).setSize(200, 50).setInteractive({ useHandCursor: true });
+    const settingsBg = this.add.rectangle(0, 0, 200, 50, 0x8B4513).setStrokeStyle(2, 0x228B22);
+    const settingsText = this.add.text(0, 0, 'Settings', { fontSize: '32px', color: '#87CEEB' }).setOrigin(0.5);
     settingsBtn.add([settingsBg, settingsText]);
     settingsBtn.on('pointerover', () => settingsText.setStyle({ color: '#ffffff' }));
-    settingsBtn.on('pointerout', () => settingsText.setStyle({ color: '#a9d1ff' }));
+    settingsBtn.on('pointerout', () => settingsText.setStyle({ color: '#87CEEB' }));
     settingsBtn.on('pointerup', () => {
       this.sound.play('buttonClick', { volume: 1.0 });
       this.scene.start('Settings');
     });
     
     // Message button to launch NarrativeScene
-    const messageBtn = this.add.container(400, buttonY + 140).setSize(200, 50).setInteractive({ useHandCursor: true });
-    const msgBg = this.add.rectangle(0, 0, 200, 50, 0x3b3f56).setStrokeStyle(2, 0xa9d1ff);
-    const msgText = this.add.text(0, 0, 'Massage', { fontSize: '32px', color: '#a9d1ff' }).setOrigin(0.5);
+    const messageBtn = this.add.container(centerX, buttonY + 140).setSize(200, 50).setInteractive({ useHandCursor: true });
+    const msgBg = this.add.rectangle(0, 0, 200, 50, 0x8B4513).setStrokeStyle(2, 0x228B22);
+    const msgText = this.add.text(0, 0, 'Massage', { fontSize: '32px', color: '#87CEEB' }).setOrigin(0.5);
     messageBtn.add([msgBg, msgText]);
     // Highlight message button until narrative viewed
     if (!messageRead) {
@@ -89,7 +84,7 @@ class MainMenu extends Phaser.Scene {
       });
     }
     messageBtn.on('pointerover', () => msgText.setStyle({ color: '#ffffff' }));
-    messageBtn.on('pointerout', () => msgText.setStyle({ color: '#a9d1ff' }));
+    messageBtn.on('pointerout', () => msgText.setStyle({ color: '#87CEEB' }));
     messageBtn.on('pointerup', () => {
       this.sound.play('buttonClick', { volume: 1.0 });
       // Mark narrative as read and return to menu later
